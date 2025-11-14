@@ -15,6 +15,7 @@ module suitter::suit {
         timestamp_ms: u64,
         likes_count: u64,
         comments_count: u64,
+        reposts_count: u64,
         walrus_blob_id: Option<String>,
     }
 
@@ -24,7 +25,7 @@ module suitter::suit {
         image_url: String,
     }
 
-    public fun create_suit(
+    entry fun create_suit(
         registry: &mut GlobalRegistry,
         content: String,
         clock: &Clock,
@@ -41,6 +42,7 @@ module suitter::suit {
             timestamp_ms: clock.timestamp_ms(),
             likes_count: 0,
             comments_count: 0,
+            reposts_count: 0,
             walrus_blob_id: option::none(),
         };
 
@@ -51,7 +53,7 @@ module suitter::suit {
         transfer::share_object(suit);
     }
 
-    public fun create_suit_with_media(
+    entry fun create_suit_with_media(
         registry: &mut GlobalRegistry,
         content: String,
         walrus_blob_id: String,
@@ -69,6 +71,7 @@ module suitter::suit {
             timestamp_ms: clock.timestamp_ms(),
             likes_count: 0,
             comments_count: 0,
+            reposts_count: 0,
             walrus_blob_id: option::some(walrus_blob_id),
         };
 
@@ -85,6 +88,10 @@ module suitter::suit {
 
     public(package) fun increment_comments(suit: &mut Suit) {
         suit.comments_count = suit.comments_count + 1;
+    }
+
+    public(package) fun increment_reposts(suit: &mut Suit) {
+        suit.reposts_count = suit.reposts_count + 1;
     }
 
     public fun author(suit: &Suit): address {
@@ -105,6 +112,10 @@ module suitter::suit {
 
     public fun comments_count(suit: &Suit): u64 {
         suit.comments_count
+    }
+
+    public fun reposts_count(suit: &Suit): u64 {
+        suit.reposts_count
     }
 
     public fun walrus_blob_id(suit: &Suit): &Option<String> {

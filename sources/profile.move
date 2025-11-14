@@ -2,13 +2,16 @@ module suitter::profile {
     use std::string::{String};
     use sui::clock::{Clock};
     use sui::table::{Self, Table};
-    use suitter::suitter::{GlobalRegistry, increment_profiles, emit_profile_created};
+    use suitter::suitter::{GlobalRegistry, increment_profiles, emit_profile_created, emit_user_followed, emit_user_unfollowed};
 
     const EUsernameExists: u64 = 1;
     const EUsernameTooShort: u64 = 2;
     const EUsernameTooLong: u64 = 3;
     const EProfileNotFound: u64 = 4;
     const ENotProfileOwner: u64 = 5;
+    const EAlreadyFollowing: u64 = 6;
+    const ENotFollowing: u64 = 7;
+    const ECannotFollowSelf: u64 = 8;
 
     const MIN_USERNAME_LENGTH: u64 = 3;
     const MAX_USERNAME_LENGTH: u64 = 20;
@@ -31,13 +34,24 @@ module suitter::profile {
         address_to_username: Table<address, String>,
     }
 
+    public struct FollowRegistry has key {
+        id: UID,
+        user_following: Table<address, Table<address, bool>>,
+    }
+
     fun init(ctx: &mut TxContext) {
-        let registry = ProfileRegistry {
+        let profile_registry = ProfileRegistry {
             id: object::new(ctx),
             username_to_profile: table::new(ctx),
             address_to_username: table::new(ctx),
         };
-        transfer::share_object(registry);
+        transfer::share_object(profile_registry);
+
+        let follow_registry = FollowRegistry {
+            id: object::new(ctx),
+            user_following: table::new(ctx),
+        };
+        transfer::share_object(follow_registry);
     }
 
     entry fun create_profile(
@@ -145,5 +159,74 @@ module suitter::profile {
 
     public fun created_at_ms(profile: &Profile): u64 {
         profile.created_at_ms
+    }
+
+    public fun followers_count(profile: &Profile): u64 {
+        profile.followers_count
+    }
+
+    public fun following_count(profile: &Profile): u64 {
+        profile.following_count
+    }
+
+    entry fun follow_user(
+        follow_registry: &mut FollowRegistry,
+        follower_profile: &mut Profile,
+        followee_profile: &mut Profile,
+        ctx: &mut TxContext
+    ) {
+        let follower = ctx.sender();
+        let followee = followee_profile.owner;
+
+        assert!(follower == follower_profile.owner, ENotProfileOwner);
+        assert!(follower != followee, ECannotFollowSelf);
+
+        if (!table::contains(&follow_registry.user_following, follower)) {
+            table::add(&mut follow_registry.user_following, follower, table::new(ctx));
+        };
+
+        let following_table = table::borrow_mut(&mut follow_registry.user_following, follower);
+        assert!(!table::contains(following_table, followee), EAlreadyFollowing);
+
+        table::add(following_table, followee, true);
+        follower_profile.following_count = follower_profile.following_count + 1;
+        followee_profile.followers_count = followee_profile.followers_count + 1;
+
+        emit_user_followed(follower, followee);
+    }
+
+    entry fun unfollow_user(
+        follow_registry: &mut FollowRegistry,
+        unfollower_profile: &mut Profile,
+        unfollowee_profile: &mut Profile,
+        ctx: &TxContext
+    ) {
+        let unfollower = ctx.sender();
+        let unfollowee = unfollowee_profile.owner;
+
+        assert!(unfollower == unfollower_profile.owner, ENotProfileOwner);
+
+        assert!(table::contains(&follow_registry.user_following, unfollower), ENotFollowing);
+        let following_table = table::borrow_mut(&mut follow_registry.user_following, unfollower);
+        assert!(table::contains(following_table, unfollowee), ENotFollowing);
+
+        table::remove(following_table, unfollowee);
+        unfollower_profile.following_count = unfollower_profile.following_count - 1;
+        unfollowee_profile.followers_count = unfollowee_profile.followers_count - 1;
+
+        emit_user_unfollowed(unfollower, unfollowee);
+    }
+
+    public fun is_following(
+        follow_registry: &FollowRegistry,
+        follower: address,
+        followee: address
+    ): bool {
+        if (!table::contains(&follow_registry.user_following, follower)) {
+            return false
+        };
+
+        let following_table = table::borrow(&follow_registry.user_following, follower);
+        table::contains(following_table, followee)
     }
 }

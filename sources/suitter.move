@@ -1,7 +1,6 @@
 module suitter::suitter {
     use std::string::{String};
     use sui::event;
-    use sui::clock::{Clock};
 
     public struct AdminCap has key, store {
         id: UID,
@@ -13,6 +12,7 @@ module suitter::suitter {
         total_profiles: u64,
         total_likes: u64,
         total_comments: u64,
+        total_reposts: u64,
     }
 
     public struct SuitCreated has copy, drop {
@@ -38,6 +38,23 @@ module suitter::suitter {
         author: address,
     }
 
+    public struct RepostAdded has copy, drop {
+        suit_id: ID,
+        repost_id: ID,
+        reposter: address,
+        original_author: address,
+    }
+
+    public struct UserFollowed has copy, drop {
+        follower: address,
+        followee: address,
+    }
+
+    public struct UserUnfollowed has copy, drop {
+        unfollower: address,
+        unfollowee: address,
+    }
+
     fun init(ctx: &mut TxContext) {
         let admin_cap = AdminCap {
             id: object::new(ctx),
@@ -49,6 +66,7 @@ module suitter::suitter {
             total_profiles: 0,
             total_likes: 0,
             total_comments: 0,
+            total_reposts: 0,
         };
 
         transfer::transfer(admin_cap, ctx.sender());
@@ -71,6 +89,10 @@ module suitter::suitter {
         registry.total_comments = registry.total_comments + 1;
     }
 
+    public fun increment_reposts(registry: &mut GlobalRegistry) {
+        registry.total_reposts = registry.total_reposts + 1;
+    }
+
     public fun emit_suit_created(suit_id: ID, author: address, timestamp: u64) {
         event::emit(SuitCreated { suit_id, author, timestamp });
     }
@@ -85,5 +107,17 @@ module suitter::suitter {
 
     public fun emit_comment_added(suit_id: ID, comment_id: ID, author: address) {
         event::emit(CommentAdded { suit_id, comment_id, author });
+    }
+
+    public fun emit_repost_added(suit_id: ID, repost_id: ID, reposter: address, original_author: address) {
+        event::emit(RepostAdded { suit_id, repost_id, reposter, original_author });
+    }
+
+    public fun emit_user_followed(follower: address, followee: address) {
+        event::emit(UserFollowed { follower, followee });
+    }
+
+    public fun emit_user_unfollowed(unfollower: address, unfollowee: address) {
+        event::emit(UserUnfollowed { unfollower, unfollowee });
     }
 }
