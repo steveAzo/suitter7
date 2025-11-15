@@ -1,0 +1,4 @@
+routes:
+  "*":
+    type: "index"
+    path: "/index.html"

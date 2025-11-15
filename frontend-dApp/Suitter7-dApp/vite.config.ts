@@ -11,9 +11,19 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  base: './', // Use relative paths for Walrus Sites
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined // Single bundle works better on Walrus
+      }
+    }
+  }
 })

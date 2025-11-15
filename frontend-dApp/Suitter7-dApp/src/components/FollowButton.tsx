@@ -74,7 +74,7 @@ export function FollowButton({ profile, variant = 'default', size = 'sm', classN
         await new Promise((resolve, reject) => {
           unfollowUser.mutate(
             {
-              unfollowerProfileId: currentUserProfile.data.id,
+              unfollowerProfileId: currentUserProfile.data?.id || '',
               unfolloweeProfileId: followeeProfileId,
             },
             {
@@ -90,7 +90,7 @@ export function FollowButton({ profile, variant = 'default', size = 'sm', classN
         await new Promise((resolve, reject) => {
           followUser.mutate(
             {
-              followerProfileId: currentUserProfile.data.id,
+              followerProfileId: currentUserProfile.data?.id || '',
               followeeProfileId: followeeProfileId,
             },
             {

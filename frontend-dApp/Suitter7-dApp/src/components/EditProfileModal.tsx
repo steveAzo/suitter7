@@ -41,6 +41,7 @@ export function EditProfileModal({ open, onOpenChange, profile }: EditProfileMod
     walrusBlobId: '' as string | null,
   });
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  console.log('Upload state:', isUploadingImage); // TODO: Implement image upload
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
