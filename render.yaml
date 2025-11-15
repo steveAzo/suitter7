@@ -1,7 +1,7 @@
 services:
   - type: web
     name: suitter7
-    runtime: static
+    runtime: node
     region: oregon
     plan: free
     buildCommand: cd frontend-dApp/Suitter7-dApp && npm install && npm run build
