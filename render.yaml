@@ -7,6 +7,9 @@ services:
     buildCommand: cd frontend-dApp/Suitter7-dApp && npm install && npm run build
     staticPublishPath: ./frontend-dApp/Suitter7-dApp/dist
     pullRequestPreviewsEnabled: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.0
     headers:
       - path: /*
         name: X-Content-Type-Options
