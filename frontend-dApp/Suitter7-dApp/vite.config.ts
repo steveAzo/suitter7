@@ -11,7 +11,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: './', // Use relative paths for Walrus Sites
+  base: '/', // Use absolute paths for web hosting
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
