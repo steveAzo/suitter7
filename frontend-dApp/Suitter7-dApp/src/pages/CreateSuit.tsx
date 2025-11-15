@@ -11,8 +11,7 @@ export function CreateSuit() {
   const [activeTab, setActiveTab] = useState<'text' | 'video' | 'image'>('text');
   const [content, setContent] = useState('');
   const [walrusBlobId, setWalrusBlobId] = useState<string>('');
-  const [mediaFile, setMediaFile] = useState<File | null>(null);
-  console.log('Media file:', mediaFile); // TODO: Implement media upload
+  const [, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);

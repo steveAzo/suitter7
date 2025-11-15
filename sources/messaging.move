@@ -9,7 +9,6 @@ module suitter::messaging {
     const ECannotMessageSelf: u64 = 4;
     const EInvalidBlobId: u64 = 5;
 
-
     public struct Message has store {
         sender: address,
         encrypted_content_blob_id: String,  
@@ -29,6 +28,7 @@ module suitter::messaging {
 
     public struct ConversationRegistry has key {
         id: UID,
+
         conversations: Table<address, Table<address, ID>>,
     }
 
@@ -45,6 +45,7 @@ module suitter::messaging {
         user1: address,
         user2: address
     ): bool {
+
         if (table::contains(&registry.conversations, user1)) {
             let user2_table = table::borrow(&registry.conversations, user1);
             if (table::contains(user2_table, user2)) {
@@ -73,6 +74,7 @@ module suitter::messaging {
                 return option::some(*table::borrow(user2_table, user2))
             }
         };
+
         if (table::contains(&registry.conversations, user2)) {
             let user1_table = table::borrow(&registry.conversations, user2);
             if (table::contains(user1_table, user1)) {
@@ -93,6 +95,7 @@ module suitter::messaging {
         assert!(sender != other_user, ECannotMessageSelf);
 
         if (conversation_exists(conversation_registry, sender, other_user)) {
+
             return
         };
 
@@ -164,7 +167,6 @@ module suitter::messaging {
         emit_message_sent(object::id(conversation), sender, receiver, timestamp_ms);
     }
 
-
     entry fun send_message_with_media(
         _conversation_registry: &ConversationRegistry,
         global_registry: &mut GlobalRegistry,
@@ -180,7 +182,7 @@ module suitter::messaging {
 
         let blob_id_length = encrypted_content_blob_id.length();
         assert!(blob_id_length > 0, EInvalidBlobId);
-        
+
         let media_blob_id_length = media_blob_id.length();
         assert!(media_blob_id_length > 0, EInvalidBlobId);
 
@@ -220,6 +222,7 @@ module suitter::messaging {
             return
         };
         let message = vector::borrow_mut(messages, index);
+
         if (message.sender != reader) {
             message.is_read = true;
         };
@@ -292,4 +295,3 @@ module suitter::messaging {
         &message.media_blob_id
     }
 }
-

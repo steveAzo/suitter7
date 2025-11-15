@@ -98,6 +98,7 @@ export function Notifications() {
     }
   }, [notifications, activeTab]);
 
+
   // Handle view suit - navigate to home page with suit ID in state
   const handleViewSuit = (suitId: string | undefined) => {
     if (!suitId) return;

@@ -3,7 +3,6 @@ import { SuitCard } from '../components/SuitCard';
 import { FollowButton } from '../components/FollowButton';
 import { useSuits, useCreateSuit, useAllProfiles, useTopicStats } from '../hooks/useContract';
 import { useCurrentAccount } from '@mysten/dapp-kit';
-
 import toast from 'react-hot-toast';
 import { getUserDisplayName, getUserHandle, getUserAvatarInitial, getUserProfileImageUrl } from '../utils/userDisplay';
 
