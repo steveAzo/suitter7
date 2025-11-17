@@ -296,4 +296,26 @@ module suitter::suitter {
     public fun emit_community_post_created(community_id: ID, suit_id: ID, author: address, timestamp_ms: u64) {
         event::emit(CommunityPostCreated { community_id, suit_id, author, timestamp_ms });
     }
+
+    #[test_only]
+    public fun create_test_registry(ctx: &mut TxContext): GlobalRegistry {
+        GlobalRegistry {
+            id: object::new(ctx),
+            total_suits: 0,
+            total_profiles: 0,
+            total_likes: 0,
+            total_comments: 0,
+            total_reposts: 0,
+            total_mentions: 0,
+            total_messages: 0,
+            total_communities: 0,
+            posts: table::new(ctx),
+            author_suits: table::new(ctx),
+        }
+    }
+
+    #[test_only]
+    public fun share_test_registry(registry: GlobalRegistry) {
+        transfer::share_object(registry);
+    }
 }

@@ -7,7 +7,6 @@ module suitter::suitter {
         id: UID,
     }
 
-    /// Suit information stored in the registry
     public struct SuitInfo has copy, drop, store {
         suit_id: ID,
         author: address,
@@ -25,9 +24,9 @@ module suitter::suitter {
         total_mentions: u64,
         total_messages: u64,
         total_communities: u64,
-        /// Table storing all posts (suits) by suit_id
+
         posts: Table<ID, SuitInfo>,
-        /// Table storing suit IDs by author address for quick lookups
+
         author_suits: Table<address, Table<ID, bool>>,
     }
 
@@ -76,7 +75,7 @@ module suitter::suitter {
         mention_id: ID,
         mentioner: address,
         mentioned_user: address,
-        content_type: u8,  // 0 = suit, 1 = comment
+        content_type: u8,  
     }
 
     public struct ConversationCreated has copy, drop {
@@ -112,7 +111,7 @@ module suitter::suitter {
         let admin_cap = AdminCap {
             id: object::new(ctx),
         };
-        
+
         let registry = GlobalRegistry {
             id: object::new(ctx),
             total_suits: 0,
@@ -163,7 +162,6 @@ module suitter::suitter {
         registry.total_communities = registry.total_communities + 1;
     }
 
-    /// Register a new suit in the global registry
     public fun register_suit(
         registry: &mut GlobalRegistry,
         suit_id: ID,
@@ -178,11 +176,9 @@ module suitter::suitter {
             timestamp_ms,
             has_media,
         };
-        
-        // Add to posts table
+
         table::add(&mut registry.posts, suit_id, suit_info);
-        
-        // Add to author_suits table for quick lookups
+
         if (!table::contains(&registry.author_suits, author)) {
             table::add(&mut registry.author_suits, author, table::new(ctx));
         };
@@ -190,12 +186,10 @@ module suitter::suitter {
         table::add(author_suits_table, suit_id, true);
     }
 
-    /// Check if a suit exists in the registry
     public fun suit_exists(registry: &GlobalRegistry, suit_id: ID): bool {
         table::contains(&registry.posts, suit_id)
     }
 
-    /// Get suit information from the registry
     public fun get_suit_info(registry: &GlobalRegistry, suit_id: ID): Option<SuitInfo> {
         if (table::contains(&registry.posts, suit_id)) {
             option::some(*table::borrow(&registry.posts, suit_id))
@@ -204,7 +198,6 @@ module suitter::suitter {
         }
     }
 
-    /// Get suit author
     public fun get_suit_author(registry: &GlobalRegistry, suit_id: ID): Option<address> {
         if (table::contains(&registry.posts, suit_id)) {
             let info = table::borrow(&registry.posts, suit_id);
@@ -214,7 +207,6 @@ module suitter::suitter {
         }
     }
 
-    /// Get suit timestamp
     public fun get_suit_timestamp(registry: &GlobalRegistry, suit_id: ID): Option<u64> {
         if (table::contains(&registry.posts, suit_id)) {
             let info = table::borrow(&registry.posts, suit_id);
@@ -224,7 +216,6 @@ module suitter::suitter {
         }
     }
 
-    /// Check if a suit has media
     public fun suit_has_media(registry: &GlobalRegistry, suit_id: ID): bool {
         if (table::contains(&registry.posts, suit_id)) {
             let info = table::borrow(&registry.posts, suit_id);
@@ -234,7 +225,6 @@ module suitter::suitter {
         }
     }
 
-    /// Check if an author has created a specific suit
     public fun author_has_suit(registry: &GlobalRegistry, author: address, suit_id: ID): bool {
         if (!table::contains(&registry.author_suits, author)) {
             return false
@@ -243,22 +233,18 @@ module suitter::suitter {
         table::contains(author_suits_table, suit_id)
     }
 
-    /// Get suit ID from SuitInfo
     public fun suit_info_id(info: &SuitInfo): ID {
         info.suit_id
     }
 
-    /// Get author from SuitInfo
     public fun suit_info_author(info: &SuitInfo): address {
         info.author
     }
 
-    /// Get timestamp from SuitInfo
     public fun suit_info_timestamp(info: &SuitInfo): u64 {
         info.timestamp_ms
     }
 
-    /// Check if SuitInfo has media
     public fun suit_info_has_media(info: &SuitInfo): bool {
         info.has_media
     }
@@ -309,5 +295,27 @@ module suitter::suitter {
 
     public fun emit_community_post_created(community_id: ID, suit_id: ID, author: address, timestamp_ms: u64) {
         event::emit(CommunityPostCreated { community_id, suit_id, author, timestamp_ms });
+    }
+
+    #[test_only]
+    public fun create_test_registry(ctx: &mut TxContext): GlobalRegistry {
+        GlobalRegistry {
+            id: object::new(ctx),
+            total_suits: 0,
+            total_profiles: 0,
+            total_likes: 0,
+            total_comments: 0,
+            total_reposts: 0,
+            total_mentions: 0,
+            total_messages: 0,
+            total_communities: 0,
+            posts: table::new(ctx),
+            author_suits: table::new(ctx),
+        }
+    }
+
+    #[test_only]
+    public fun share_test_registry(registry: GlobalRegistry) {
+        transfer::share_object(registry);
     }
 }
